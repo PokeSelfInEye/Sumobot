@@ -37,9 +37,9 @@ void forward() {
 
 void reverse() {
   digitalWrite(MOTORLEFT_1, LOW);
-  analogWrite(MOTORLEFT_2, 255);
+  analogWrite(MOTORLEFT_2, 100);
   digitalWrite(MOTORRIGHT_1, LOW);
-  analogWrite(MOTORRIGHT_2, 255);
+  analogWrite(MOTORRIGHT_2, 100);
   delay(100);
   digitalWrite(MOTORLEFT_1, LOW);
   digitalWrite(MOTORLEFT_2, LOW);
@@ -48,10 +48,10 @@ void reverse() {
 }
 
 void left() {
-  analogWrite(MOTORLEFT_1, 255);
+  analogWrite(MOTORLEFT_1, 100);
   digitalWrite(MOTORLEFT_2, LOW);
   digitalWrite(MOTORRIGHT_1, LOW);
-  analogWrite(MOTORRIGHT_2, 255);
+  analogWrite(MOTORRIGHT_2, 100);
   delay(250);
   digitalWrite(MOTORLEFT_1, LOW);
   digitalWrite(MOTORLEFT_2, LOW);
@@ -61,8 +61,8 @@ void left() {
 
 void right() {
   digitalWrite(MOTORLEFT_1, LOW);
-  analogWrite(MOTORLEFT_2, 255);
-  analogWrite(MOTORRIGHT_1, 255);
+  analogWrite(MOTORLEFT_2, 100);
+  analogWrite(MOTORRIGHT_1, 100);
   digitalWrite(MOTORRIGHT_2, LOW);
   delay(250);
   digitalWrite(MOTORLEFT_1, LOW);
@@ -94,18 +94,24 @@ void loop() {
   distance = measure.RangeMilliMeter;
   Serial.print(distance);
   Serial.print("\t");
-  Serial.println(state);
+  Serial.print(state);
+  Serial.print("\t");
+  Serial.print(analogRead(0));
+  Serial.print("\t");
+  Serial.print(analogRead(1));
+  Serial.print("\t");
+  Serial.println(analogRead(2));
   switch (state) {
     case LINEFOUNDLEFT:
       reverse();
       right();
-      if (digitalRead(LEFTSENS) == HIGH) {
+      if (analogRead(0) <= 500) {
         state = LINEFOUNDLEFT;
       }
-      if (digitalRead(RIGHTSENS) == HIGH) {
+      if (analogRead(1) <= 500) {
         state = LINEFOUNDRIGHT;
       }
-      if (digitalRead(BACKSENS) == HIGH) {
+      if (analogRead(2) <= 500) {
         state = LINEFOUNDBACK;
       }
       else {
@@ -115,13 +121,13 @@ void loop() {
     case LINEFOUNDRIGHT:
       reverse();
       left();
-      if (digitalRead(LEFTSENS) == HIGH) {
+      if (analogRead(0) <= 500) {
         state = LINEFOUNDLEFT;
       }
-      if (digitalRead(RIGHTSENS) == HIGH) {
+      if (analogRead(1) <= 500) {
         state = LINEFOUNDRIGHT;
       }
-      if (digitalRead(BACKSENS) == HIGH) {
+      if (analogRead(2) <= 500) {
         state = LINEFOUNDBACK;
       }
       else {
@@ -130,13 +136,13 @@ void loop() {
       break;
     case LINEFOUNDBACK:
       forward();
-      if (digitalRead(LEFTSENS) == HIGH) {
+      if (analogRead(0) <= 500) {
         state = LINEFOUNDLEFT;
       }
-      if (digitalRead(RIGHTSENS) == HIGH) {
+      if (analogRead(1) <= 500) {
         state = LINEFOUNDRIGHT;
       }
-      if (digitalRead(BACKSENS) == HIGH) {
+      if (analogRead(2) <= 500) {
         state = LINEFOUNDBACK;
       }
       else {
@@ -145,13 +151,13 @@ void loop() {
       break;
     case ROBOTFOUND:
       forward();
-      if (digitalRead(LEFTSENS) == HIGH) {
+      if (analogRead(0) <= 500) {
         state = LINEFOUNDLEFT;
       }
-      if (digitalRead(RIGHTSENS) == HIGH) {
+      if (analogRead(1) <= 500) {
         state = LINEFOUNDRIGHT;
       }
-      if (digitalRead(BACKSENS) == HIGH) {
+      if (analogRead(2) <= 500) {
         state = LINEFOUNDBACK;
       }
       if (distance > 1000) {
@@ -162,13 +168,13 @@ void loop() {
       }
       break;
     case SEARCH:
-      if (digitalRead(LEFTSENS) == HIGH) {
+      if (analogRead(0) <= 500) {
         state = LINEFOUNDLEFT;
       }
-      if (digitalRead(RIGHTSENS) == HIGH) {
+      if (analogRead(1) <= 500) {
         state = LINEFOUNDRIGHT;
       }
-      if (digitalRead(BACKSENS) == HIGH) {
+      if (analogRead(2) <= 500) {
         state = LINEFOUNDBACK;
       }
       if (distance <= 1000) {
