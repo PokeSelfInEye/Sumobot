@@ -18,12 +18,46 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X(); // "
 #define REVERSE 6
 #define LEFT 7
 #define RIGHT 8
-//analogread 5 and 4 are the distance sensor
 int distance;
 int state = SEARCH;
 int direct;
 
 long timeThis, timeLast;
+
+void forward() {
+  analogWrite(MOTORLEFT_1, 200);
+  digitalWrite(MOTORLEFT_2, LOW);
+  analogWrite(MOTORRIGHT_1, 200);
+  digitalWrite(MOTORRIGHT_2, LOW);
+}
+
+void reverse() {
+  digitalWrite(MOTORLEFT_1, LOW);
+  analogWrite(MOTORLEFT_2, 200);
+  digitalWrite(MOTORRIGHT_1, LOW);
+  analogWrite(MOTORRIGHT_2, 200);
+}
+
+void left() {
+  analogWrite(MOTORLEFT_1, 200);
+  digitalWrite(MOTORLEFT_2, LOW);
+  digitalWrite(MOTORRIGHT_1, LOW);
+  analogWrite(MOTORRIGHT_2, 200);
+}
+
+void right() {
+  digitalWrite(MOTORLEFT_1, LOW);
+  analogWrite(MOTORLEFT_2, 200);
+  analogWrite(MOTORRIGHT_1, 200);
+  digitalWrite(MOTORRIGHT_2, LOW);
+}
+
+void cease() {
+  digitalWrite(MOTORLEFT_1, LOW);
+  digitalWrite(MOTORLEFT_2, LOW);
+  digitalWrite(MOTORRIGHT_1, LOW);
+  digitalWrite(MOTORRIGHT_2, LOW);
+}
 
 void setup() {
   Serial.begin(9600);
@@ -45,50 +79,52 @@ void loop() {
   distance = measure.RangeMilliMeter;
   Serial.print(distance);
   Serial.print("\t");
-  Serial.print(state);
-  Serial.print("\t");
   Serial.print(analogRead(0));
   Serial.print("\t");
   Serial.print(analogRead(1));
   Serial.print("\t");
   Serial.print(analogRead(2));
   Serial.print("\t");
+  Serial.print(timeThis - timeLast);
+  Serial.print("\t");
   Serial.println(state);
-  
+
   switch (state) {
+
+
     case FORWARD:
 
 
-      timeLast = timeThis;
       if (analogRead(0) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDLEFT;
       }
       if (analogRead(1) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDRIGHT;
       }
       if (analogRead(2) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDBACK;
       }
-      if (distance <= 1000) {
-        state = ROBOTFOUND;
+      if ((distance > 1000) && (direct != SEARCH)) {
+        timeLast = timeThis;
+        state = SEARCH;
       }
-      if (timeThis - timeLast <= 100) {
+      if (timeThis - timeLast <= 500) {
 
-        analogWrite(MOTORLEFT_1, 200);
-        digitalWrite(MOTORLEFT_2, LOW);
-        analogWrite(MOTORRIGHT_1, 200);
-        digitalWrite(MOTORRIGHT_2, LOW);
+        forward();
+
       }
       else {
-        digitalWrite(MOTORLEFT_1, LOW);
-        digitalWrite(MOTORLEFT_2, LOW);
-        digitalWrite(MOTORRIGHT_1, LOW);
-        digitalWrite(MOTORRIGHT_2, LOW);
+        cease();
       }
-      if (direct = SEARCH) {
+      if (direct == SEARCH) {
+        timeLast = timeThis;
         state = LEFT;
       }
       else {
+        timeLast = timeThis;
         state = SEARCH;
       }
 
@@ -100,37 +136,39 @@ void loop() {
 
 
       if (analogRead(0) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDLEFT;
       }
       if (analogRead(1) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDRIGHT;
       }
       if (analogRead(2) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDBACK;
       }
       if (distance <= 1000) {
-        state = ROBOTFOUND;
+        direct = ROBOTFOUND;
+        timeLast = timeThis;
+        state = FORWARD;
       }
-      if (timeThis - timeLast <= 100) {
+      if (timeThis - timeLast <= 500) {
+        reverse();
 
-        digitalWrite(MOTORLEFT_1, LOW);
-        analogWrite(MOTORLEFT_2, 200);
-        digitalWrite(MOTORRIGHT_1, LOW);
-        analogWrite(MOTORRIGHT_2, 200);
       }
       else {
-        digitalWrite(MOTORLEFT_1, LOW);
-        digitalWrite(MOTORLEFT_2, LOW);
-        digitalWrite(MOTORRIGHT_1, LOW);
-        digitalWrite(MOTORRIGHT_2, LOW);
+        cease();
       }
-      if (direct = LEFT)  {
+      if (direct == LEFT)  {
+        timeLast = timeThis;
         state = RIGHT;
       }
-      if (direct = RIGHT) {
+      if (direct == RIGHT) {
+        timeLast = timeThis;
         state = LEFT;
       }
       else {
+        timeLast = timeThis;
         state = SEARCH;
       }
 
@@ -142,34 +180,34 @@ void loop() {
 
 
       if (analogRead(0) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDLEFT;
       }
       if (analogRead(1) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDRIGHT;
       }
       if (analogRead(2) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDBACK;
       }
       if (distance <= 1000) {
+        timeLast = timeThis;
         state = ROBOTFOUND;
       }
-      if (timeThis - timeLast <= 250) {
+      if (timeThis - timeLast <= 750) {
+        left();
 
-        analogWrite(MOTORLEFT_1, 200);
-        digitalWrite(MOTORLEFT_2, LOW);
-        digitalWrite(MOTORRIGHT_1, LOW);
-        analogWrite(MOTORRIGHT_2, 200);
       }
       else {
-        digitalWrite(MOTORLEFT_1, LOW);
-        digitalWrite(MOTORLEFT_2, LOW);
-        digitalWrite(MOTORRIGHT_1, LOW);
-        digitalWrite(MOTORRIGHT_2, LOW);
+        cease();
       }
-      if (direct = SEARCH) {
+      if (direct == SEARCH) {
+        timeLast = timeThis;
         state = FORWARD;
       }
       else {
+        timeLast = timeThis;
         state = SEARCH;
       }
 
@@ -180,36 +218,35 @@ void loop() {
     case RIGHT:
 
 
-
       if (analogRead(0) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDLEFT;
       }
       if (analogRead(1) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDRIGHT;
       }
       if (analogRead(2) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDBACK;
       }
       if (distance <= 1000) {
+        timeLast = timeThis;
         state = ROBOTFOUND;
       }
-      if (timeThis - timeLast <= 250) {
+      if (timeThis - timeLast <= 750) {
+        right();
 
-        digitalWrite(MOTORLEFT_1, LOW);
-        analogWrite(MOTORLEFT_2, 200);
-        analogWrite(MOTORRIGHT_1, 200);
-        digitalWrite(MOTORRIGHT_2, LOW);
       }
       else {
-        digitalWrite(MOTORLEFT_1, LOW);
-        digitalWrite(MOTORLEFT_2, LOW);
-        digitalWrite(MOTORRIGHT_1, LOW);
-        digitalWrite(MOTORRIGHT_2, LOW);
+        cease();
       }
-      if (direct = SEARCH) {
+      if (direct == SEARCH) {
+        timeLast = timeThis;
         state = LEFT;
       }
       else {
+        timeLast = timeThis;
         state = SEARCH;
       }
 
@@ -221,60 +258,62 @@ void loop() {
 
 
       if (analogRead(1) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDRIGHT;
       }
       if (analogRead(2) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDBACK;
       }
-      direct = LEFT;
-      state = REVERSE;
+      if (direct == SEARCH) {
+        direct = LEFT;
+        state = REVERSE;
+      }
+
       break;
+
+
     case LINEFOUNDRIGHT:
 
+
       if (analogRead(0) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDLEFT;
       }
       if (analogRead(1) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDRIGHT;
       }
       if (analogRead(2) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDBACK;
       }
       else {
+        timeLast = timeThis;
         state = SEARCH;
       }
+
+
       break;
+
+
     case LINEFOUNDBACK:
+
+
       if (analogRead(0) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDLEFT;
       }
       if (analogRead(1) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDRIGHT;
       }
       if (analogRead(2) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDBACK;
       }
       else {
-        state = SEARCH;
-      }
-
-
-      break;
-
-
-    case ROBOTFOUND:
-
-
-      if (analogRead(0) <= 500) {
-        state = LINEFOUNDLEFT;
-      }
-      if (analogRead(1) <= 500) {
-        state = LINEFOUNDRIGHT;
-      }
-      if (analogRead(2) <= 500) {
-        state = LINEFOUNDBACK;
-      }
-      if (distance > 1000) {
+        timeLast = timeThis;
         state = SEARCH;
       }
 
@@ -285,19 +324,31 @@ void loop() {
     case SEARCH:
 
 
-      direct = SEARCH;
       if (analogRead(0) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDLEFT;
       }
       if (analogRead(1) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDRIGHT;
       }
       if (analogRead(2) <= 500) {
+        timeLast = timeThis;
         state = LINEFOUNDBACK;
       }
       if (distance <= 1000) {
-        state = ROBOTFOUND;
+        timeLast = timeThis;
+        direct = ROBOTFOUND;
+        state = FORWARD;
       }
+      else {
+        timeLast = timeThis;
+        direct = SEARCH;
+        state = FORWARD;
+
+      }
+
+
       break;
   }
 }
