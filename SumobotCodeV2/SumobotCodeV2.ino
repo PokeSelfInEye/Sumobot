@@ -70,31 +70,19 @@ void setup() {
     Serial.println(F("Failed to boot VL53L0X"));
     while (1);
   }
-  forward();
-  while(1);
 }
 
 void loop() {
+  // put your main code here, to run repeatedly:
   timeThis = millis();
   VL53L0X_RangingMeasurementData_t measure;
   lox.rangingTest(&measure, false);
   distance = measure.RangeMilliMeter;
-  Serial.print(distance);
-  Serial.print("\t");
-  Serial.print(analogRead(0));
-  Serial.print("\t");
-  Serial.print(analogRead(1));
-  Serial.print("\t");
-  Serial.print(analogRead(2));
-  Serial.print("\t");
-  Serial.print(timeThis - timeLast);
-  Serial.print("\t");
-  Serial.println(state);
 
   switch (state) {
 
 
-    case FORWARD:
+    case SEARCH:
 
 
       if (analogRead(0) <= 500) {
@@ -108,6 +96,32 @@ void loop() {
       if (analogRead(2) <= 500) {
         timeLast = timeThis;
         state = LINEFOUNDBACK;
+      }
+      if (distance <= 1000) {
+        timeLast = timeThis;
+        direct = ROBOTFOUND;
+        state = FORWARD;
+      }
+      else {
+        timeLast = timeThis;
+        direct = SEARCH;
+        state = FORWARD;
+      }
+
+
+      break;
+
+
+    case FORWARD:
+
+
+      if (analogRead(0) <= 500) {
+        timeLast = timeThis;
+        state = LINEFOUNDLEFT;
+      }
+      if (analogRead(1) <= 500) {
+        timeLast = timeThis;
+        state = LINEFOUNDRIGHT;
       }
       if ((distance > 1000) && (direct != SEARCH)) {
         timeLast = timeThis;
@@ -137,22 +151,9 @@ void loop() {
     case REVERSE:
 
 
-      if (analogRead(0) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDLEFT;
-      }
-      if (analogRead(1) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDRIGHT;
-      }
       if (analogRead(2) <= 500) {
         timeLast = timeThis;
         state = LINEFOUNDBACK;
-      }
-      if (distance <= 1000) {
-        direct = ROBOTFOUND;
-        timeLast = timeThis;
-        state = FORWARD;
       }
       if (timeThis - timeLast <= 500) {
         reverse();
@@ -178,21 +179,9 @@ void loop() {
       break;
 
 
-    case LEFT:
+      case LEFT:
 
 
-      if (analogRead(0) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDLEFT;
-      }
-      if (analogRead(1) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDRIGHT;
-      }
-      if (analogRead(2) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDBACK;
-      }
       if (distance <= 1000) {
         timeLast = timeThis;
         state = ROBOTFOUND;
@@ -216,21 +205,9 @@ void loop() {
       break;
 
 
-    case RIGHT:
+      case RIGHT:
 
 
-      if (analogRead(0) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDLEFT;
-      }
-      if (analogRead(1) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDRIGHT;
-      }
-      if (analogRead(2) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDBACK;
-      }
       if (distance <= 1000) {
         timeLast = timeThis;
         state = ROBOTFOUND;
@@ -255,10 +232,11 @@ void loop() {
       break;
 
 
-    case LINEFOUNDLEFT:
+       case LINEFOUNDLEFT:
 
 
       direct = LEFT;
+      timeLast = timeThis;
       state = REVERSE;
 
 
@@ -269,61 +247,19 @@ void loop() {
 
 
       direct = RIGHT;
+      timeLast = timeThis;
       state = REVERSE;
 
 
       break;
 
 
-    case LINEFOUNDBACK:
+      case LINEFOUNDBACK:
 
 
-      if (analogRead(0) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDLEFT;
-      }
-      if (analogRead(1) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDRIGHT;
-      }
-      if (analogRead(2) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDBACK;
-      }
-      else {
+        direct = REVERSE;
         timeLast = timeThis;
         state = SEARCH;
-      }
-
-
-      break;
-
-
-    case SEARCH:
-
-
-      if (analogRead(0) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDLEFT;
-      }
-      if (analogRead(1) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDRIGHT;
-      }
-      if (analogRead(2) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDBACK;
-      }
-      if (distance <= 1000) {
-        timeLast = timeThis;
-        direct = ROBOTFOUND;
-        state = FORWARD;
-      }
-      else {
-        timeLast = timeThis;
-        direct = SEARCH;
-        state = FORWARD;
-      }
 
 
       break;
