@@ -25,30 +25,30 @@ int direct;
 long timeThis, timeLast;
 
 void forward() {
-  analogWrite(MOTORLEFT_1, 150);
+  analogWrite(MOTORLEFT_1, 45);
   digitalWrite(MOTORLEFT_2, LOW);
-  analogWrite(MOTORRIGHT_1, 150);
+  analogWrite(MOTORRIGHT_1, 45);
   digitalWrite(MOTORRIGHT_2, LOW);
 }
 
 void reverse() {
   digitalWrite(MOTORLEFT_1, LOW);
-  analogWrite(MOTORLEFT_2, 150);
+  analogWrite(MOTORLEFT_2, 45);
   digitalWrite(MOTORRIGHT_1, LOW);
-  analogWrite(MOTORRIGHT_2, 150);
+  analogWrite(MOTORRIGHT_2, 45);
 }
 
 void left() {
-  analogWrite(MOTORLEFT_1, 150);
+  analogWrite(MOTORLEFT_1, 45);
   digitalWrite(MOTORLEFT_2, LOW);
   digitalWrite(MOTORRIGHT_1, LOW);
-  analogWrite(MOTORRIGHT_2, 150);
+  analogWrite(MOTORRIGHT_2, 45);
 }
 
 void right() {
   digitalWrite(MOTORLEFT_1, LOW);
-  analogWrite(MOTORLEFT_2, 150);
-  analogWrite(MOTORRIGHT_1, 150);
+  analogWrite(MOTORLEFT_2, 45);
+  analogWrite(MOTORRIGHT_1, 45);
   digitalWrite(MOTORRIGHT_2, LOW);
 }
 
@@ -78,6 +78,13 @@ void loop() {
   VL53L0X_RangingMeasurementData_t measure;
   lox.rangingTest(&measure, false);
   distance = measure.RangeMilliMeter;
+  Serial.print(analogRead(0));
+  Serial.print("\t");
+  Serial.print(analogRead(1));
+  Serial.print("\t");
+  Serial.print(analogRead(2));
+  Serial.print("\t");
+  Serial.println(state);
 
   switch (state) {
 
@@ -140,6 +147,8 @@ void loop() {
         state = LEFT;
       }
       else {
+       // Serial.print(direct);
+       // Serial.print("GOING TO SEARCH");
         timeLast = timeThis;
         state = SEARCH;
       }
@@ -157,7 +166,6 @@ void loop() {
       }
       if (timeThis - timeLast <= 500) {
         reverse();
-
       }
       else {
         cease();
@@ -179,7 +187,7 @@ void loop() {
       break;
 
 
-      case LEFT:
+    case LEFT:
 
 
       if (distance <= 1000) {
@@ -205,7 +213,7 @@ void loop() {
       break;
 
 
-      case RIGHT:
+    case RIGHT:
 
 
       if (distance <= 1000) {
@@ -232,7 +240,7 @@ void loop() {
       break;
 
 
-       case LINEFOUNDLEFT:
+    case LINEFOUNDLEFT:
 
 
       direct = LEFT;
@@ -254,12 +262,12 @@ void loop() {
       break;
 
 
-      case LINEFOUNDBACK:
+    case LINEFOUNDBACK:
 
 
-        direct = REVERSE;
-        timeLast = timeThis;
-        state = SEARCH;
+      direct = REVERSE;
+      timeLast = timeThis;
+      state = SEARCH;
 
 
       break;
