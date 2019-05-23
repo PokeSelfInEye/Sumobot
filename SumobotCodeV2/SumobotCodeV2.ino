@@ -25,6 +25,7 @@ int direct;
 long timeThis, timeLast;
 
 void forward() {
+  Serial.print("forward");
   analogWrite(MOTORLEFT_1, 45);
   digitalWrite(MOTORLEFT_2, LOW);
   analogWrite(MOTORRIGHT_1, 45);
@@ -32,6 +33,7 @@ void forward() {
 }
 
 void reverse() {
+  Serial.print("reverse");
   digitalWrite(MOTORLEFT_1, LOW);
   analogWrite(MOTORLEFT_2, 45);
   digitalWrite(MOTORRIGHT_1, LOW);
@@ -39,6 +41,7 @@ void reverse() {
 }
 
 void left() {
+  Serial.print("left");
   analogWrite(MOTORLEFT_1, 45);
   digitalWrite(MOTORLEFT_2, LOW);
   digitalWrite(MOTORRIGHT_1, LOW);
@@ -46,6 +49,7 @@ void left() {
 }
 
 void right() {
+  Serial.print("right");
   digitalWrite(MOTORLEFT_1, LOW);
   analogWrite(MOTORLEFT_2, 45);
   analogWrite(MOTORRIGHT_1, 45);
@@ -78,12 +82,12 @@ void loop() {
   VL53L0X_RangingMeasurementData_t measure;
   lox.rangingTest(&measure, false);
   distance = measure.RangeMilliMeter;
-  Serial.print(analogRead(0));
-  Serial.print("\t");
+  /*Serial.print(analogRead(0));
+    Serial.print("\t");*/
   Serial.print(analogRead(1));
   Serial.print("\t");
-  Serial.print(analogRead(2));
-  Serial.print("\t");
+  /*Serial.print(analogRead(2));
+    Serial.print("\t");*/
   Serial.println(state);
 
   switch (state) {
@@ -92,17 +96,16 @@ void loop() {
     case SEARCH:
 
 
-      if (analogRead(0) <= 500) {
+      if (analogRead(0) < 500) {
+        direct = LEFT;
         timeLast = timeThis;
-        state = LINEFOUNDLEFT;
+        state = REVERSE;
       }
-      if (analogRead(1) <= 500) {
+      if (analogRead(1) < 500) {
+        direct = RIGHT;
+        Serial.print("less than 500");
         timeLast = timeThis;
-        state = LINEFOUNDRIGHT;
-      }
-      if (analogRead(2) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDBACK;
+        state = REVERSE;
       }
       if (distance <= 1000) {
         timeLast = timeThis;
@@ -122,13 +125,15 @@ void loop() {
     case FORWARD:
 
 
-      if (analogRead(0) <= 500) {
+      if (analogRead(0) < 500) {
+        direct = LEFT;
         timeLast = timeThis;
-        state = LINEFOUNDLEFT;
+        state = REVERSE;
       }
-      if (analogRead(1) <= 500) {
+      if (analogRead(1) < 500) {
+        direct = RIGHT;
         timeLast = timeThis;
-        state = LINEFOUNDRIGHT;
+        state = REVERSE;
       }
       if ((distance > 1000) && (direct != SEARCH)) {
         timeLast = timeThis;
@@ -147,8 +152,8 @@ void loop() {
         state = LEFT;
       }
       else {
-       // Serial.print(direct);
-       // Serial.print("GOING TO SEARCH");
+        // Serial.print(direct);
+        // Serial.print("GOING TO SEARCH");
         timeLast = timeThis;
         state = SEARCH;
       }
@@ -160,10 +165,7 @@ void loop() {
     case REVERSE:
 
 
-      if (analogRead(2) <= 500) {
-        timeLast = timeThis;
-        state = LINEFOUNDBACK;
-      }
+      Serial.print("IN REVERSE");
       if (timeThis - timeLast <= 500) {
         reverse();
       }
@@ -192,19 +194,14 @@ void loop() {
 
       if (distance <= 1000) {
         timeLast = timeThis;
-        state = ROBOTFOUND;
+        direct = ROBOTFOUND;
+        state = FORWARD;
       }
-      if (timeThis - timeLast <= 750) {
+      if (timeThis - timeLast <= 500) {
         left();
       }
       else {
         cease();
-      }
-      if (direct == SEARCH) {
-        timeLast = timeThis;
-        state = FORWARD;
-      }
-      else {
         timeLast = timeThis;
         state = SEARCH;
       }
@@ -218,56 +215,18 @@ void loop() {
 
       if (distance <= 1000) {
         timeLast = timeThis;
-        state = ROBOTFOUND;
+        direct = ROBOTFOUND;
+        state = FORWARD;
       }
-      if (timeThis - timeLast <= 750) {
+      if (timeThis - timeLast <= 500) {
         right();
 
       }
       else {
         cease();
-      }
-      if (direct == SEARCH) {
-        timeLast = timeThis;
-        state = LEFT;
-      }
-      else {
         timeLast = timeThis;
         state = SEARCH;
       }
-
-
-      break;
-
-
-    case LINEFOUNDLEFT:
-
-
-      direct = LEFT;
-      timeLast = timeThis;
-      state = REVERSE;
-
-
-      break;
-
-
-    case LINEFOUNDRIGHT:
-
-
-      direct = RIGHT;
-      timeLast = timeThis;
-      state = REVERSE;
-
-
-      break;
-
-
-    case LINEFOUNDBACK:
-
-
-      direct = REVERSE;
-      timeLast = timeThis;
-      state = SEARCH;
 
 
       break;
