@@ -18,6 +18,7 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X(); // "
 #define REVERSE 6
 #define LEFT 7
 #define RIGHT 8
+#define SPEED 255
 int distance;
 int state = SEARCH;
 int direct;
@@ -26,33 +27,33 @@ long timeThis, timeLast;
 
 void forward() {
   Serial.print("forward");
-  analogWrite(MOTORLEFT_1, 45);
+  analogWrite(MOTORLEFT_1, SPEED);
   digitalWrite(MOTORLEFT_2, LOW);
-  analogWrite(MOTORRIGHT_1, 45);
+  analogWrite(MOTORRIGHT_1, SPEED);
   digitalWrite(MOTORRIGHT_2, LOW);
 }
 
 void reverse() {
   Serial.print("reverse");
   digitalWrite(MOTORLEFT_1, LOW);
-  analogWrite(MOTORLEFT_2, 45);
+  analogWrite(MOTORLEFT_2, SPEED);
   digitalWrite(MOTORRIGHT_1, LOW);
-  analogWrite(MOTORRIGHT_2, 45);
+  analogWrite(MOTORRIGHT_2, SPEED);
 }
 
 void left() {
   Serial.print("left");
-  analogWrite(MOTORLEFT_1, 45);
+  analogWrite(MOTORLEFT_1, SPEED);
   digitalWrite(MOTORLEFT_2, LOW);
   digitalWrite(MOTORRIGHT_1, LOW);
-  analogWrite(MOTORRIGHT_2, 45);
+  analogWrite(MOTORRIGHT_2, SPEED);
 }
 
 void right() {
   Serial.print("right");
   digitalWrite(MOTORLEFT_1, LOW);
-  analogWrite(MOTORLEFT_2, 45);
-  analogWrite(MOTORRIGHT_1, 45);
+  analogWrite(MOTORLEFT_2, SPEED);
+  analogWrite(MOTORRIGHT_1, SPEED);
   digitalWrite(MOTORRIGHT_2, LOW);
 }
 
@@ -112,7 +113,8 @@ void loop() {
         direct = ROBOTFOUND;
         state = FORWARD;
       }
-      else {
+      else if ((analogRead(1) > 500) && (analogRead(0) > 500)  &&  (distance > 1000))  {
+        Serial.print("in else");
         timeLast = timeThis;
         direct = SEARCH;
         state = FORWARD;
@@ -151,7 +153,7 @@ void loop() {
         timeLast = timeThis;
         state = LEFT;
       }
-      else {
+      else if ((analogRead(1) > 500) && (analogRead(0) > 500) &&  (distance > 1000))  {
         // Serial.print(direct);
         // Serial.print("GOING TO SEARCH");
         timeLast = timeThis;
@@ -180,7 +182,7 @@ void loop() {
         timeLast = timeThis;
         state = LEFT;
       }
-      else {
+      else if ((direct != LEFT) && (direct != RIGHT)) {
         timeLast = timeThis;
         state = SEARCH;
       }
@@ -200,7 +202,7 @@ void loop() {
       if (timeThis - timeLast <= 500) {
         left();
       }
-      else {
+      else if (distance > 1000) {
         cease();
         timeLast = timeThis;
         state = SEARCH;
@@ -222,7 +224,7 @@ void loop() {
         right();
 
       }
-      else {
+      else if (distance > 1000)  {
         cease();
         timeLast = timeThis;
         state = SEARCH;
