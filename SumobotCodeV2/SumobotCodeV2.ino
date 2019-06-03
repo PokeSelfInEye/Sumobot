@@ -3,9 +3,9 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X(); // "
 
 #define LIFTSERVO   5
 #define MOTORLEFT_1 6
-#define MOTORLEFT_2 9
+#define MOTORLEFT_2 5
 #define MOTORRIGHT_1 10
-#define MOTORRIGHT_2 5
+#define MOTORRIGHT_2 9
 #define LEFTSENS 7
 #define RIGHTSENS 4
 #define BACKSENS 8
