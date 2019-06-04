@@ -18,7 +18,8 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X(); // "
 #define REVERSE 6
 #define LEFT 7
 #define RIGHT 8
-#define SPEED 255
+#define SPEED 150
+#define TURNSPEED 50
 int distance;
 int state = SEARCH;
 int direct;
@@ -43,17 +44,17 @@ void reverse() {
 
 void left() {
   Serial.print("left");
-  analogWrite(MOTORLEFT_1, SPEED);
+  analogWrite(MOTORLEFT_1, TURNSPEED);
   digitalWrite(MOTORLEFT_2, LOW);
   digitalWrite(MOTORRIGHT_1, LOW);
-  analogWrite(MOTORRIGHT_2, SPEED);
+  analogWrite(MOTORRIGHT_2, TURNSPEED);
 }
 
 void right() {
   Serial.print("right");
   digitalWrite(MOTORLEFT_1, LOW);
-  analogWrite(MOTORLEFT_2, SPEED);
-  analogWrite(MOTORRIGHT_1, SPEED);
+  analogWrite(MOTORLEFT_2, 70);
+  analogWrite(MOTORRIGHT_1, 70);
   digitalWrite(MOTORRIGHT_2, LOW);
 }
 
@@ -75,6 +76,7 @@ void setup() {
     Serial.println(F("Failed to boot VL53L0X"));
     while (1);
   }
+  //delay(5000);
 }
 
 void loop() {
@@ -97,27 +99,29 @@ void loop() {
     case SEARCH:
 
 
-      if (analogRead(0) < 500) {
-        direct = LEFT;
-        timeLast = timeThis;
-        state = REVERSE;
+      if (analogRead(0) < 200) {
+        reverse();
       }
-      if (analogRead(1) < 500) {
-        direct = RIGHT;
-        Serial.print("less than 500");
-        timeLast = timeThis;
-        state = REVERSE;
+      if (analogRead(1) < 200) {
+        reverse();
       }
-      if (distance <= 1000) {
-        timeLast = timeThis;
-        direct = ROBOTFOUND;
-        state = FORWARD;
+      if (distance <= 400) {
+        forward();
       }
-      else if ((analogRead(1) > 500) && (analogRead(0) > 500)  &&  (distance > 1000))  {
-        Serial.print("in else");
-        timeLast = timeThis;
-        direct = SEARCH;
-        state = FORWARD;
+      if ((analogRead(1) > 200) && (analogRead(0) > 200)  &&  (distance > 400))  {
+        if (timeThis - timeLast < 1000) {
+          left();
+        }
+        if ((timeThis - timeLast > 1000) && (timeThis - timeLast < 2000)) {
+          right();
+        }
+        if ( timeThis - timeLast > 2000) {
+          timeLast = timeThis;
+        }
+        else {
+          cease;
+          state = SEARCH;
+        }
       }
 
 
@@ -137,10 +141,6 @@ void loop() {
         timeLast = timeThis;
         state = REVERSE;
       }
-      if ((distance > 1000) && (direct != SEARCH)) {
-        timeLast = timeThis;
-        state = SEARCH;
-      }
       if (timeThis - timeLast <= 500) {
 
         forward();
@@ -148,6 +148,7 @@ void loop() {
       }
       else {
         cease();
+        state = SEARCH;
       }
       if (direct == SEARCH) {
         timeLast = timeThis;
@@ -168,7 +169,7 @@ void loop() {
 
 
       Serial.print("IN REVERSE");
-      if (timeThis - timeLast <= 500) {
+      if (timeThis - timeLast <= 1000) {
         reverse();
       }
       else {
