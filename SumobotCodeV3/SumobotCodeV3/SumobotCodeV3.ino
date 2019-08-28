@@ -12,17 +12,20 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X(); // "
 #define LINE 2
 #define SPEED 150
 #define TURNSPEED 50
+#define LEFT 0
+#define RIGHT 1
 
 int distance;
 int state = SEARCH;
+int direct;
 
 long timeThis, timeLast;
 
 void forward() {
   Serial.print("forward");
-  analogWrite(MOTORLEFT_1, SPEED);
+  analogWrite(MOTORLEFT_1, 100);
   digitalWrite(MOTORLEFT_2, LOW);
-  analogWrite(MOTORRIGHT_1, SPEED);
+  analogWrite(MOTORRIGHT_1, 255);
   digitalWrite(MOTORRIGHT_2, LOW);
 }
 
@@ -45,8 +48,8 @@ void left() {
 void right() {
   Serial.print("right");
   digitalWrite(MOTORLEFT_1, LOW);
-  analogWrite(MOTORLEFT_2, 70);
-  analogWrite(MOTORRIGHT_1, 70);
+  analogWrite(MOTORLEFT_2, TURNSPEED);
+  analogWrite(MOTORRIGHT_1, TURNSPEED);
   digitalWrite(MOTORRIGHT_2, LOW);
 }
 
@@ -59,6 +62,7 @@ void cease() {
 
 void setup() {
   Serial.begin(9600);
+  Serial.print("Setup Start");
   pinMode(MOTORLEFT_1, OUTPUT);
   pinMode(MOTORLEFT_2, OUTPUT);
   pinMode(MOTORRIGHT_1, OUTPUT);
@@ -67,7 +71,8 @@ void setup() {
     Serial.println(F("Failed to boot VL53L0X"));
     while (1);
   }
-  //delay(5000);
+  Serial.print("Setup Done");
+  delay(5000);
 }
 
 void loop() {
@@ -75,6 +80,7 @@ void loop() {
   VL53L0X_RangingMeasurementData_t measure;
   lox.rangingTest(&measure, false);
   distance = measure.RangeMilliMeter;
+  Serial.println(distance);
   switch (state) {
 
 
@@ -89,18 +95,15 @@ void loop() {
         timeLast = timeThis;
         state = LINE;
       }
-      if (distance <= 400) {
+      if (distance < 700) {
         timeLast = timeThis;
         state = FOUND;
       }
-      else if ((analogRead(1) > 200) && (analogRead(0) > 200) &&  (distance > 400)) {
+      else if ((analogRead(1) > 200) && (analogRead(0) > 200) &&  (distance > 700)) {
         if (timeThis - timeLast < 1000) {
           left();
         }
-        if ((timeThis - timeLast > 1000) && (timeThis - timeLast < 2000)) {
-          right();
-        }
-        if ( timeThis - timeLast > 2000) {
+        if ( timeThis - timeLast > 1000) {
           timeLast = timeThis;
         }
       }
@@ -120,12 +123,15 @@ void loop() {
 
     case FOUND:
       if (timeThis - timeLast < 200) {
-        forward;
+        right();
       }
-      if ((timeThis - timeLast > 200) && (distance < 400)) {
+      if ((timeThis - timeLast < 1200) && (timeThis - timeLast > 200)) {
+        forward();
+      }
+      if ((timeThis - timeLast > 1200) && (distance < 700)) {
         timeLast = timeThis;
       }
-      if ((timeThis - timeLast > 200) && (distance > 400)) {
+      if ((timeThis - timeLast > 1200) && (distance > 700)) {
         timeLast = timeThis;
         state = SEARCH;
       }
